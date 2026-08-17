@@ -20,7 +20,7 @@ function main() {
   const directUrl = process.env.DATABASE_URL_UNPOOLED ?? pooledUrl.replace("-pooler.", ".");
 
   try {
-    run("npx prisma db push --accept-data-loss --skip-generate", { DATABASE_URL: directUrl });
+    run("npx prisma db push --accept-data-loss", { DATABASE_URL: directUrl });
     run("npx tsx prisma/seed.ts", { DATABASE_URL: pooledUrl });
 
     console.log("Banco sincronizado e populado com sucesso.");
