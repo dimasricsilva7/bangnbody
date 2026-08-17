@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "(prisma migrate resolve --rolled-back 20260817000000_init || true) && (prisma migrate deploy && tsx prisma/seed.ts || echo 'DATABASE_URL not set or unreachable — skipping migrate/seed, site will run in demo mode') && next build",
+    "build": "node scripts/db-setup.mjs && next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
