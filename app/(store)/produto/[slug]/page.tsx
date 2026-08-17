@@ -4,6 +4,9 @@ import { catalog, getCatalogItem, relatedItems } from "@/lib/catalog";
 import { reviewsWithPhotos } from "@/lib/demo-data";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductBuyBox } from "@/components/product/ProductBuyBox";
+import { WhatItDoes } from "@/components/product/WhatItDoes";
+import { WhatsInIt } from "@/components/product/WhatsInIt";
+import { HowToUseSection } from "@/components/product/HowToUseSection";
 import { Accordion } from "@/components/product/Accordion";
 import { RatingBreakdown } from "@/components/product/RatingBreakdown";
 import { ProductCarousel } from "@/components/home/ProductCarousel";
@@ -68,56 +71,6 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
         : undefined,
   };
 
-  const accordionItems =
-    item.kind === "produto"
-      ? [
-          {
-            title: "Saiba Mais",
-            content: (
-              <ul className="list-disc space-y-1.5 pl-4">
-                {item.benefits.map((b) => (
-                  <li key={b}>{b}</li>
-                ))}
-              </ul>
-            ),
-          },
-          { title: "Modo de Uso", content: item.howToUse },
-          {
-            title: "Ingredientes",
-            content: (
-              <dl className="space-y-3">
-                {item.ingredients.map((ing) => (
-                  <div key={ing.name}>
-                    <dt className="text-[12px] font-medium uppercase tracking-wide text-ink">{ing.name}</dt>
-                    <dd className="mt-0.5">{ing.description}</dd>
-                  </div>
-                ))}
-              </dl>
-            ),
-          },
-        ]
-      : [
-          {
-            title: "O Que Está Incluso",
-            content: (
-              <ul className="list-disc space-y-1.5 pl-4">
-                {item.includes.map((b) => (
-                  <li key={b}>{b}</li>
-                ))}
-              </ul>
-            ),
-          },
-          {
-            title: "Fragrância e Economia",
-            content: (
-              <p>
-                Fragrância: {item.fragrance}. De {formatBRL(item.compareAtPrice)} por {formatBRL(item.price)}{" "}
-                comprando o kit completo.
-              </p>
-            ),
-          },
-        ];
-
   return (
     <main className="mx-auto max-w-[1400px] px-4 py-10 md:px-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -128,38 +81,65 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
       <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
         <ProductGallery images={item.gallery} name={item.name} />
 
-        <div>
-          {item.kind === "produto" ? (
-            <ProductBuyBox
-              slug={item.slug}
-              name={item.name}
-              subtitle={item.subtitle}
-              description={item.description}
-              badge={item.badge}
-              reviewCount={item.reviewCount}
-              options={item.sizes}
-              image={item.image}
-            />
-          ) : (
-            <ProductBuyBox
-              slug={item.slug}
-              name={item.name}
-              subtitle={item.subtitle}
-              description={item.description}
-              badge={item.badge}
-              reviewCount={item.reviewCount}
-              options={[{ label: "Kit", price: item.price, compareAtPrice: item.compareAtPrice, sku: item.slug }]}
-              image={item.image}
-            />
-          )}
-
-          <div className="mt-8">
-            <Accordion items={accordionItems} />
-          </div>
-        </div>
+        {item.kind === "produto" ? (
+          <ProductBuyBox
+            slug={item.slug}
+            name={item.name}
+            subtitle={item.subtitle}
+            description={item.description}
+            badge={item.badge}
+            reviewCount={item.reviewCount}
+            options={item.sizes}
+            image={item.image}
+          />
+        ) : (
+          <ProductBuyBox
+            slug={item.slug}
+            name={item.name}
+            subtitle={item.subtitle}
+            description={item.description}
+            badge={item.badge}
+            reviewCount={item.reviewCount}
+            options={[{ label: "Kit", price: item.price, compareAtPrice: item.compareAtPrice, sku: item.slug }]}
+            image={item.image}
+          />
+        )}
       </div>
 
-      <div className="mx-auto mt-20 max-w-[720px]">
+      {item.kind === "produto" ? (
+        <>
+          <WhatItDoes title={`Como usar a ${item.name}`} benefits={item.benefits} image={item.gallery[1] ?? item.image} />
+          <WhatsInIt ingredients={item.ingredients} image={item.gallery[2] ?? item.image} />
+          <HowToUseSection howToUse={item.howToUse} image={item.gallery[0]} />
+        </>
+      ) : (
+        <>
+          <WhatItDoes
+            title={`O que vem no ${item.name}`}
+            benefits={item.includes}
+            image={item.gallery[1] ?? item.image}
+          />
+          <section className="border-t border-border-soft py-16">
+            <div className="mx-auto max-w-[500px]">
+              <Accordion
+                items={[
+                  {
+                    title: "Fragrância e Economia",
+                    content: (
+                      <p>
+                        Fragrância: {item.fragrance}. De {formatBRL(item.compareAtPrice)} por{" "}
+                        {formatBRL(item.price)} comprando o kit completo.
+                      </p>
+                    ),
+                  },
+                ]}
+              />
+            </div>
+          </section>
+        </>
+      )}
+
+      <div className="mx-auto mt-4 max-w-[720px]">
         <h2 className="mb-6 text-center font-display text-2xl font-medium text-ink">Avaliações e Resultados</h2>
         <RatingBreakdown reviewCount={item.reviewCount} />
 
