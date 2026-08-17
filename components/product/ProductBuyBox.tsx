@@ -13,6 +13,7 @@ export function ProductBuyBox({
   slug,
   name,
   subtitle,
+  description,
   badge,
   reviewCount,
   options,
@@ -22,6 +23,7 @@ export function ProductBuyBox({
   slug: string;
   name: string;
   subtitle: string;
+  description?: string;
   badge?: DemoBadge;
   reviewCount: number;
   options: Option[];
@@ -33,11 +35,18 @@ export function ProductBuyBox({
   const open = useCartStore((s) => s.open);
   const option = options[selected];
   const onSale = !!option.compareAtPrice && option.compareAtPrice > option.price;
+  const points = Math.round(option.price);
 
   return (
     <div>
-      <p className="text-[12px] uppercase tracking-wide text-ink-soft">{subtitle}</p>
-      <h1 className="mt-1 text-2xl font-medium uppercase tracking-wide text-ink md:text-3xl">{name}</h1>
+      {onSale && (
+        <span className="mb-2 inline-block rounded-full bg-accent-dark px-3 py-1 text-[10px] font-medium uppercase tracking-wide text-ink">
+          Economize {formatSavings(option.compareAtPrice!, option.price)}
+        </span>
+      )}
+
+      <h1 className="font-display text-2xl font-medium text-ink md:text-3xl">{name}</h1>
+      <p className="mt-1 text-[13px] italic text-ink-soft">{subtitle}</p>
 
       <div className="mt-3 flex items-center gap-2">
         <div className={cn("flex items-center gap-0.5", reviewCount === 0 && "opacity-30")}>
@@ -58,12 +67,12 @@ export function ProductBuyBox({
       <div className="mt-4 flex items-center gap-3">
         {onSale && <span className="text-lg text-ink-soft line-through">{formatBRL(option.compareAtPrice!)}</span>}
         <span className="text-2xl font-medium text-ink">{formatBRL(option.price)}</span>
-        {onSale && (
-          <span className="rounded-full bg-accent-dark px-2.5 py-1 text-[11px] font-medium uppercase text-ink">
-            Economize {formatSavings(option.compareAtPrice!, option.price)}
-          </span>
-        )}
       </div>
+      <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-ink-soft">
+        +{points} pontos de fidelidade
+      </p>
+
+      {description && <p className="mt-4 text-[13px] leading-relaxed text-ink-soft">{description}</p>}
 
       {options.length > 1 && (
         <div className="mt-6">

@@ -7,7 +7,7 @@ export function Hero() {
       <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-center gap-8 px-4 py-10 md:grid-cols-2 md:px-8 md:py-0">
         <div className="order-2 text-center md:order-1 md:text-left">
           <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-sale">Última Chance!</p>
-          <h1 className="mt-3 text-4xl font-medium leading-tight text-ink md:text-6xl">
+          <h1 className="mt-3 font-display text-4xl font-medium leading-tight text-ink md:text-6xl">
             30% OFF
             <br />
             Sitewide

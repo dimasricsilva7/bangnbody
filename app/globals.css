@@ -23,6 +23,7 @@
   --color-border-soft: var(--border-soft);
   --color-sale: var(--sale);
   --font-sans: var(--font-poppins);
+  --font-display: var(--font-fraunces);
 }
 
 body {

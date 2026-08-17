@@ -23,7 +23,7 @@ export function Reviews() {
   return (
     <section className="mx-auto max-w-[1400px] px-4 py-14 md:px-8">
       <div className="mb-8 text-center">
-        <h2 className="text-3xl font-medium text-ink md:text-4xl">Avaliações e Resultados</h2>
+        <h2 className="font-display text-3xl font-medium text-ink md:text-4xl">Avaliações e Resultados</h2>
         <p className="mx-auto mt-2 max-w-lg text-[12px] text-ink-soft">
           Fotos ilustrativas de demonstração. Resultados variam de pessoa para pessoa.
         </p>

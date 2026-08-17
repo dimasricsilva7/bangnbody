@@ -9,7 +9,7 @@ export function Newsletter() {
   return (
     <section className="bg-ink py-16 text-white">
       <div className="mx-auto max-w-[560px] px-4 text-center md:px-8">
-        <h2 className="text-2xl font-medium md:text-3xl">Entre para o clube Bangn Body</h2>
+        <h2 className="font-display text-2xl font-medium md:text-3xl">Entre para o clube Bangn Body</h2>
         <p className="mt-2 text-sm text-white/70">
           Receba 10% de desconto na primeira compra e novidades em primeira mão.
         </p>

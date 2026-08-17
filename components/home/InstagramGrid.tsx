@@ -6,7 +6,7 @@ export function InstagramGrid() {
   return (
     <section className="mx-auto max-w-[1400px] px-4 py-14 md:px-8">
       <div className="mb-8 text-center">
-        <h2 className="text-3xl font-medium text-ink md:text-4xl">Siga-nos no Instagram</h2>
+        <h2 className="font-display text-3xl font-medium text-ink md:text-4xl">Siga-nos no Instagram</h2>
         <p className="mt-2 text-sm text-ink-soft">@bangn.body</p>
       </div>
       <div className="grid grid-cols-3 gap-2 md:grid-cols-6 md:gap-4">

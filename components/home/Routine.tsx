@@ -8,7 +8,7 @@ export function Routine() {
     <section className="mx-auto max-w-[1400px] px-4 py-14 md:px-8">
       <div className="mb-10 text-center">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-sale">30% Off Rotina de 4 Passos</p>
-        <h2 className="mt-2 text-3xl font-medium text-ink md:text-4xl">Rotina de 4 Etapas</h2>
+        <h2 className="mt-2 font-display text-3xl font-medium text-ink md:text-4xl">Rotina de 4 Etapas</h2>
       </div>
 
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -20,7 +20,7 @@ export function Routine() {
               </span>
               <Image src={step.image} alt={step.title} fill sizes="300px" className="object-cover" />
             </div>
-            <h3 className="mt-4 text-base font-medium uppercase tracking-wide text-ink">{step.title}</h3>
+            <h3 className="mt-4 font-display text-base font-medium uppercase tracking-wide text-ink">{step.title}</h3>
             <p className="mt-1 text-[13px] text-ink-soft">{step.description}</p>
             <p className="mt-2 text-[13px] font-medium text-ink">{step.productName}</p>
             <p className="text-[13px] text-ink-soft">{formatBRL(step.price)}</p>

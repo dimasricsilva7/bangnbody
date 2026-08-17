@@ -6,7 +6,7 @@ export function DiscoverMore() {
   return (
     <section className="mx-auto max-w-[1400px] px-4 py-14 md:px-8">
       <div className="mb-10 text-center">
-        <h2 className="text-3xl font-medium text-ink md:text-4xl">Descubra Mais</h2>
+        <h2 className="font-display text-3xl font-medium text-ink md:text-4xl">Descubra Mais</h2>
       </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {discoverMore.map((item) => (
@@ -20,7 +20,7 @@ export function DiscoverMore() {
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
             </div>
-            <h3 className="mt-4 text-lg font-medium text-ink">{item.title}</h3>
+            <h3 className="mt-4 font-display text-lg font-medium text-ink">{item.title}</h3>
             <p className="mt-1 text-[13px] text-ink-soft">{item.description}</p>
           </Link>
         ))}

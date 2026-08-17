@@ -33,7 +33,7 @@ export function CatalogGrid({ items, title }: { items: CatalogItem[]; title: str
     <div>
       <div className="mb-8 flex flex-col gap-4 border-b border-border-soft pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-medium uppercase tracking-wide text-ink md:text-3xl">{title}</h1>
+          <h1 className="font-display text-2xl font-medium text-ink md:text-3xl">{title}</h1>
           <p className="mt-1 text-[12px] text-ink-soft">{filtered.length} produtos</p>
         </div>
 

@@ -29,7 +29,7 @@ export function BrandValues() {
   return (
     <section className="bg-cream">
       <div className="mx-auto max-w-[1400px] px-4 py-16 md:px-8">
-        <h2 className="mb-12 text-center text-3xl font-medium text-ink md:text-4xl">Temos Orgulho de Ser...</h2>
+        <h2 className="mb-12 text-center font-display text-3xl font-medium text-ink md:text-4xl">Temos Orgulho de Ser...</h2>
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
           {values.map((value) => (
             <div key={value.title} className="flex flex-col items-center text-center">

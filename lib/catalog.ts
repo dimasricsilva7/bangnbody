@@ -404,7 +404,7 @@ const bundleSeeds: BundleSeed[] = [
 export const bundles: CatalogBundle[] = bundleSeeds.map((b) => ({
   kind: "kit" as const,
   slug: slugify(b.name),
-  name: b.name.toUpperCase(),
+  name: b.name,
   subtitle: b.fragrance,
   fragrance: b.fragrance,
   badge: b.badge,

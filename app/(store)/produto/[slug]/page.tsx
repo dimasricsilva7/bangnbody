@@ -4,6 +4,8 @@ import { catalog, getCatalogItem, relatedItems } from "@/lib/catalog";
 import { reviewsWithPhotos } from "@/lib/demo-data";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductBuyBox } from "@/components/product/ProductBuyBox";
+import { Accordion } from "@/components/product/Accordion";
+import { RatingBreakdown } from "@/components/product/RatingBreakdown";
 import { ProductCarousel } from "@/components/home/ProductCarousel";
 import { formatBRL } from "@/lib/format";
 
@@ -23,7 +25,7 @@ export async function generateMetadata({
   if (!item) return {};
   return {
     title: `${item.name} | Sua Marca`,
-    description: item.kind === "produto" ? item.description : item.description,
+    description: item.description,
   };
 }
 
@@ -66,6 +68,56 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
         : undefined,
   };
 
+  const accordionItems =
+    item.kind === "produto"
+      ? [
+          {
+            title: "Saiba Mais",
+            content: (
+              <ul className="list-disc space-y-1.5 pl-4">
+                {item.benefits.map((b) => (
+                  <li key={b}>{b}</li>
+                ))}
+              </ul>
+            ),
+          },
+          { title: "Modo de Uso", content: item.howToUse },
+          {
+            title: "Ingredientes",
+            content: (
+              <dl className="space-y-3">
+                {item.ingredients.map((ing) => (
+                  <div key={ing.name}>
+                    <dt className="text-[12px] font-medium uppercase tracking-wide text-ink">{ing.name}</dt>
+                    <dd className="mt-0.5">{ing.description}</dd>
+                  </div>
+                ))}
+              </dl>
+            ),
+          },
+        ]
+      : [
+          {
+            title: "O Que Está Incluso",
+            content: (
+              <ul className="list-disc space-y-1.5 pl-4">
+                {item.includes.map((b) => (
+                  <li key={b}>{b}</li>
+                ))}
+              </ul>
+            ),
+          },
+          {
+            title: "Fragrância e Economia",
+            content: (
+              <p>
+                Fragrância: {item.fragrance}. De {formatBRL(item.compareAtPrice)} por {formatBRL(item.price)}{" "}
+                comprando o kit completo.
+              </p>
+            ),
+          },
+        ];
+
   return (
     <main className="mx-auto max-w-[1400px] px-4 py-10 md:px-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -76,104 +128,56 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
       <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
         <ProductGallery images={item.gallery} name={item.name} />
 
-        {item.kind === "produto" ? (
-          <ProductBuyBox
-            slug={item.slug}
-            name={item.name}
-            subtitle={item.subtitle}
-            badge={item.badge}
-            reviewCount={item.reviewCount}
-            options={item.sizes}
-            image={item.image}
-          />
-        ) : (
-          <ProductBuyBox
-            slug={item.slug}
-            name={item.name}
-            subtitle={item.subtitle}
-            badge={item.badge}
-            reviewCount={item.reviewCount}
-            options={[{ label: "Kit", price: item.price, compareAtPrice: item.compareAtPrice, sku: item.slug }]}
-            image={item.image}
-          />
-        )}
-      </div>
-
-      <div className="mx-auto mt-16 grid max-w-[840px] grid-cols-1 gap-10 md:grid-cols-2">
         <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink">Descrição</h2>
-          <p className="text-[13px] leading-relaxed text-ink-soft">{item.description}</p>
-
-          {item.kind === "produto" && (
-            <>
-              <h2 className="mb-3 mt-6 text-sm font-semibold uppercase tracking-wide text-ink">Benefícios</h2>
-              <ul className="list-disc space-y-1.5 pl-4 text-[13px] leading-relaxed text-ink-soft">
-                {item.benefits.map((b) => (
-                  <li key={b}>{b}</li>
-                ))}
-              </ul>
-            </>
+          {item.kind === "produto" ? (
+            <ProductBuyBox
+              slug={item.slug}
+              name={item.name}
+              subtitle={item.subtitle}
+              description={item.description}
+              badge={item.badge}
+              reviewCount={item.reviewCount}
+              options={item.sizes}
+              image={item.image}
+            />
+          ) : (
+            <ProductBuyBox
+              slug={item.slug}
+              name={item.name}
+              subtitle={item.subtitle}
+              description={item.description}
+              badge={item.badge}
+              reviewCount={item.reviewCount}
+              options={[{ label: "Kit", price: item.price, compareAtPrice: item.compareAtPrice, sku: item.slug }]}
+              image={item.image}
+            />
           )}
 
-          {item.kind === "kit" && (
-            <>
-              <h2 className="mb-3 mt-6 text-sm font-semibold uppercase tracking-wide text-ink">O que está incluso</h2>
-              <ul className="list-disc space-y-1.5 pl-4 text-[13px] leading-relaxed text-ink-soft">
-                {item.includes.map((b) => (
-                  <li key={b}>{b}</li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
-
-        <div>
-          {item.kind === "produto" && (
-            <>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink">Modo de Uso</h2>
-              <p className="text-[13px] leading-relaxed text-ink-soft">{item.howToUse}</p>
-
-              <h2 className="mb-3 mt-6 text-sm font-semibold uppercase tracking-wide text-ink">Ingredientes</h2>
-              <dl className="space-y-3">
-                {item.ingredients.map((ing) => (
-                  <div key={ing.name}>
-                    <dt className="text-[12px] font-medium uppercase tracking-wide text-ink">{ing.name}</dt>
-                    <dd className="text-[13px] leading-relaxed text-ink-soft">{ing.description}</dd>
-                  </div>
-                ))}
-              </dl>
-            </>
-          )}
-          {item.kind === "kit" && (
-            <>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink">Fragrância</h2>
-              <p className="text-[13px] text-ink-soft">{item.fragrance}</p>
-              <h2 className="mb-3 mt-6 text-sm font-semibold uppercase tracking-wide text-ink">Economia</h2>
-              <p className="text-[13px] text-ink-soft">
-                De {formatBRL(item.compareAtPrice)} por {formatBRL(item.price)} comprando o kit completo.
-              </p>
-            </>
-          )}
+          <div className="mt-8">
+            <Accordion items={accordionItems} />
+          </div>
         </div>
       </div>
 
-      {productReviews.length > 0 && (
-        <div className="mt-16">
-          <h2 className="mb-6 text-center text-2xl font-medium text-ink">Avaliações deste produto</h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mx-auto mt-20 max-w-[720px]">
+        <h2 className="mb-6 text-center font-display text-2xl font-medium text-ink">Avaliações e Resultados</h2>
+        <RatingBreakdown reviewCount={item.reviewCount} />
+
+        {productReviews.length > 0 && (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {productReviews.map((review) => (
-              <article key={review.title} className="rounded-2xl border border-border-soft p-6 text-center">
+              <article key={review.title} className="rounded-2xl border border-border-soft p-6">
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-ink">{review.title}</h3>
                 <p className="mt-3 text-[13px] leading-relaxed text-ink-soft">{review.comment}</p>
                 <p className="mt-3 text-[12px] font-medium text-ink">{review.author}</p>
               </article>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      <div className="mt-16">
-        <h2 className="mb-8 text-center text-2xl font-medium text-ink">Compre Também</h2>
+      <div className="mt-20">
+        <h2 className="mb-8 text-center font-display text-2xl font-medium text-ink">Compre Também</h2>
         <ProductCarousel products={related} />
       </div>
     </main>

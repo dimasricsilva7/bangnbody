@@ -14,7 +14,7 @@ export function PromoBanner() {
         />
         <div className="relative">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-soft">Oferta por tempo limitado</p>
-          <h2 className="mt-3 text-3xl font-medium text-ink md:text-5xl">30% Off Rotina de 4 Passos</h2>
+          <h2 className="mt-3 font-display text-3xl font-medium text-ink md:text-5xl">30% Off Rotina de 4 Passos</h2>
           <Link
             href="/rotina"
             className="mt-6 inline-block rounded-full bg-ink px-8 py-3.5 text-[13px] font-medium uppercase tracking-wide text-white hover:bg-ink/90"
