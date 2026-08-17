@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sua Marca — E-commerce (reconstrução de referência)
 
-## Getting Started
+Loja completa em Next.js 16 + Prisma 7 + PostgreSQL, com painel admin, carrinho, checkout
+via link de pagamento por produto e estrutura pronta para deploy na Vercel.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 (App Router, Turbopack)
+- Tailwind CSS v4
+- Prisma 7 + `@prisma/adapter-pg` (PostgreSQL)
+- Zustand (carrinho/UI)
+- Autenticação admin: JWT em cookie httpOnly + `proxy.ts` protegendo `/admin/*`
+
+## Rodando localmente
 
 ```bash
+npm install
+cp .env.example .env
+# preencha DATABASE_URL com um Postgres real (Neon, Vercel Postgres, Supabase, Prisma Postgres...)
+npx prisma migrate dev --name init
+npx prisma db seed   # ou: npm run db:seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Login do admin demo criado pelo seed: `admin@suamarca.com` / `TrocarSenha123!` — **troque a senha
+antes de ir para produção.**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estado atual
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Vitrine (home, catálogo, produto, carrinho) funciona **sem banco**, usando os dados demo de
+  `lib/catalog.ts` — isso é intencional, para o site nunca quebrar sem `DATABASE_URL`.
+- O painel `/admin` já lê e grava no Postgres via Prisma. Sem `DATABASE_URL` configurada, cada
+  página mostra um aviso e continua funcionando em modo somente-leitura.
+- O seed (`prisma/seed.ts`) importa o mesmo catálogo demo para o banco, então depois de rodá-lo
+  o admin tem os mesmos produtos que aparecem no site.
+- Checkout: cada produto tem um campo `checkoutUrl` (editável em `/admin/produtos/[slug]`) com o
+  link de pagamento gerado pelo gateway. O carrinho aceita **um produto por vez** — ao clicar em
+  "Finalizar Compra" o cliente é redirecionado para esse link.
 
-## Learn More
+## Variáveis de ambiente
 
-To learn more about Next.js, take a look at the following resources:
+Veja `.env.example`. As essenciais para o site funcionar:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `DATABASE_URL` — Postgres (necessário para o admin)
+- `AUTH_SECRET` — segredo para assinar o cookie de sessão do admin
+- `NEXT_PUBLIC_SITE_URL` — usado no sitemap/robots/SEO
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy na Vercel
 
-## Deploy on Vercel
+1. Importe o repositório na Vercel.
+2. Adicione as variáveis de ambiente do `.env.example` no painel do projeto.
+3. Build command: `npm run build` (padrão). Após o primeiro deploy, rode as migrations:
+   `npx prisma migrate deploy` (pode ser feito localmente apontando para o Postgres de produção,
+   ou via um passo de CI).
+4. Rode o seed uma vez contra o banco de produção se quiser os dados demo iniciais.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Próximos passos sugeridos
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Conectar a vitrine (home/catálogo/produto) ao Prisma como fonte de dados primária, mantendo o
+  catálogo estático como fallback de demonstração.
+- Trocar os links de checkout fixos por integração via API do gateway (Mercado Pago Preferences)
+  para suportar carrinho com múltiplos produtos.
+- Substituir os placeholders de logo e "Featured In" pelos ativos reais da marca via
+  `/admin/configuracoes` e `/admin/home`.

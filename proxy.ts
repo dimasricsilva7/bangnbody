@@ -1,0 +1,24 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { ADMIN_COOKIE, verifySession } from "@/lib/auth";
+
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (pathname === "/admin/login") return NextResponse.next();
+
+  const token = request.cookies.get(ADMIN_COOKIE)?.value;
+  const session = token ? verifySession(token) : null;
+
+  if (!session) {
+    const loginUrl = new URL("/admin/login", request.url);
+    loginUrl.searchParams.set("from", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/admin/:path*"],
+};

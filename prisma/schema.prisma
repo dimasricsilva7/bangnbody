@@ -1,0 +1,556 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────── ENUMS ───────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+}
+
+enum ProductStatus {
+  ATIVO
+  INATIVO
+  ARQUIVADO
+}
+
+enum OrderStatus {
+  NOVO
+  AGUARDANDO_PAGAMENTO
+  PAGO
+  EM_PREPARACAO
+  ENVIADO
+  ENTREGUE
+  CANCELADO
+  REEMBOLSADO
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum DiscountType {
+  PERCENTUAL
+  VALOR_FIXO
+  PRECO_PROMOCIONAL
+  BUNDLE
+  COMPRE_X_LEVE_Y
+}
+
+enum DiscountScope {
+  PRODUTO
+  CATEGORIA
+  SITEWIDE
+}
+
+enum CouponType {
+  PERCENTUAL
+  VALOR_FIXO
+  FRETE_GRATIS
+}
+
+enum InventoryMovementType {
+  ENTRADA
+  SAIDA
+  AJUSTE
+  VENDA
+  CANCELAMENTO
+  REEMBOLSO
+}
+
+enum AnalyticsEventType {
+  VIEW_ITEM
+  VIEW_CATEGORY
+  SEARCH
+  ADD_TO_CART
+  REMOVE_FROM_CART
+  BEGIN_CHECKOUT
+  PURCHASE
+  ADD_TO_WISHLIST
+  CART_CREATED
+  CHECKOUT_ABANDONED
+}
+
+// ─────────────────────────── ADMIN / AUTH ───────────────────────────
+
+model Admin {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(EDITOR)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs AdminAuditLog[]
+  priceHistory PriceHistory[]
+  inventoryMovements InventoryMovement[]
+  orderStatusChanges OrderStatusHistory[]
+
+  @@map("admins")
+}
+
+model AdminAuditLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  admin     Admin    @relation(fields: [adminId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@map("admin_audit_logs")
+}
+
+// ─────────────────────────── CUSTOMER ───────────────────────────
+
+model Customer {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  phone        String?
+  cpf          String?
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  addresses Address[]
+  orders    Order[]
+  reviews   Review[]
+  analyticsEvents AnalyticsEvent[]
+
+  @@map("customers")
+}
+
+model Address {
+  id           String   @id @default(cuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id])
+  label        String?
+  cep          String
+  street       String
+  number       String
+  complement   String?
+  neighborhood String
+  city         String
+  state        String
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  orders Order[]
+
+  @@map("addresses")
+}
+
+// ─────────────────────────── CATALOG ───────────────────────────
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  image       String?
+  order       Int      @default(0)
+  status      ProductStatus @default(ATIVO)
+  seoTitle       String?
+  seoDescription String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products CategoryProduct[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  subtitle    String?
+  shortDescription String?
+  description String?
+  ingredients String?
+  howToUse    String?
+  information String?
+
+  price          Decimal  @db.Decimal(10, 2)
+  compareAtPrice Decimal? @db.Decimal(10, 2)
+  cost           Decimal? @db.Decimal(10, 2)
+
+  sku         String   @unique
+  stock       Int      @default(0)
+  minStock    Int      @default(5)
+
+  /// Link de checkout hospedado pelo gateway de pagamento (ex: Mercado Pago, Stripe Payment Link).
+  checkoutUrl String?
+
+  status      ProductStatus @default(ATIVO)
+
+  featured    Boolean  @default(false)
+  bestSeller  Boolean  @default(false)
+  isNew       Boolean  @default(false)
+  onSale      Boolean  @default(false)
+  refillable  Boolean  @default(false)
+  preOrder    Boolean  @default(false)
+  limitedEdition Boolean @default(false)
+
+  seoTitle       String?
+  seoDescription String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  images      ProductImage[]
+  variants    ProductVariant[]
+  categories  CategoryProduct[]
+  tags        ProductTag[]
+  reviews     Review[]
+  orderItems  OrderItem[]
+  bundleItems BundleItem[]
+  inventoryMovements InventoryMovement[]
+  priceHistory PriceHistory[]
+  discounts   Discount[]
+
+  @@index([status])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  altText   String?
+  order     Int      @default(0)
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("product_images")
+}
+
+model ProductVariant {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String
+  sku       String   @unique
+  price          Decimal  @db.Decimal(10, 2)
+  compareAtPrice Decimal? @db.Decimal(10, 2)
+  stock     Int      @default(0)
+  image     String?
+  size      String?
+  fragrance String?
+  volume    String?
+  color     String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderItems OrderItem[]
+
+  @@map("product_variants")
+}
+
+model CategoryProduct {
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([categoryId, productId])
+  @@map("category_products")
+}
+
+model ProductTag {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       String
+
+  @@index([tag])
+  @@map("product_tags")
+}
+
+// ─────────────────────────── BUNDLES ───────────────────────────
+
+model Bundle {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  image       String?
+  badge       String?
+  price          Decimal  @db.Decimal(10, 2)
+  compareAtPrice Decimal? @db.Decimal(10, 2)
+  stock       Int      @default(0)
+  /// Link de checkout hospedado pelo gateway de pagamento (ex: Mercado Pago, Stripe Payment Link).
+  checkoutUrl String?
+  status      ProductStatus @default(ATIVO)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items      BundleItem[]
+  orderItems OrderItem[]
+
+  @@map("bundles")
+}
+
+model BundleItem {
+  id        String  @id @default(cuid())
+  bundleId  String
+  bundle    Bundle  @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+
+  @@map("bundle_items")
+}
+
+// ─────────────────────────── ORDERS ───────────────────────────
+
+model Order {
+  id            String      @id @default(cuid())
+  number        Int         @unique @default(autoincrement())
+  customerId    String?
+  customer      Customer?   @relation(fields: [customerId], references: [id])
+  addressId     String?
+  address       Address?    @relation(fields: [addressId], references: [id])
+
+  customerName  String
+  customerEmail String
+  customerPhone String?
+  customerCpf   String?
+
+  subtotal      Decimal     @db.Decimal(10, 2)
+  discountTotal Decimal     @db.Decimal(10, 2) @default(0)
+  shippingTotal Decimal     @db.Decimal(10, 2) @default(0)
+  total         Decimal     @db.Decimal(10, 2)
+
+  couponCode    String?
+
+  status        OrderStatus @default(NOVO)
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  items          OrderItem[]
+  payments       OrderPayment[]
+  statusHistory  OrderStatusHistory[]
+
+  @@index([status])
+  @@index([customerEmail])
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String          @id @default(cuid())
+  orderId    String
+  order      Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String?
+  product    Product?        @relation(fields: [productId], references: [id])
+  variantId  String?
+  variant    ProductVariant? @relation(fields: [variantId], references: [id])
+  bundleId   String?
+  bundle     Bundle?         @relation(fields: [bundleId], references: [id])
+
+  name       String
+  variantName String?
+  image      String?
+  unitPrice  Decimal @db.Decimal(10, 2)
+  quantity   Int
+  total      Decimal @db.Decimal(10, 2)
+
+  @@map("order_items")
+}
+
+model OrderPayment {
+  id            String        @id @default(cuid())
+  orderId       String
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider      String
+  providerPaymentId String?
+  method        String?
+  status        PaymentStatus @default(PENDING)
+  amount        Decimal       @db.Decimal(10, 2)
+  rawPayload    Json?
+  idempotencyKey String?      @unique
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("order_payments")
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(cuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    OrderStatus
+  note      String?
+  adminId   String?
+  admin     Admin?      @relation(fields: [adminId], references: [id])
+  createdAt DateTime    @default(now())
+
+  @@map("order_status_history")
+}
+
+// ─────────────────────────── PROMOTIONS ───────────────────────────
+
+model Coupon {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  type        CouponType
+  value       Decimal    @db.Decimal(10, 2)
+  minOrderValue Decimal? @db.Decimal(10, 2)
+  maxUses     Int?
+  uses        Int        @default(0)
+  singleUsePerCustomer Boolean @default(false)
+  productId   String?
+  categoryId  String?
+  customerId  String?
+  startsAt    DateTime?
+  endsAt      DateTime?
+  active      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+
+  @@map("coupons")
+}
+
+model Discount {
+  id         String        @id @default(cuid())
+  name       String
+  type       DiscountType
+  scope      DiscountScope
+  value      Decimal       @db.Decimal(10, 2)
+  productId  String?
+  product    Product?      @relation(fields: [productId], references: [id])
+  categoryId String?
+  startsAt   DateTime?
+  endsAt     DateTime?
+  active     Boolean       @default(true)
+  createdAt  DateTime      @default(now())
+
+  @@map("discounts")
+}
+
+model Banner {
+  id             String   @id @default(cuid())
+  title          String?
+  subtitle       String?
+  promoText      String?
+  ctaLabel       String?
+  link           String?
+  imageDesktop   String
+  imageMobile    String?
+  order          Int      @default(0)
+  status         ProductStatus @default(ATIVO)
+  startsAt       DateTime?
+  endsAt         DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("banners")
+}
+
+model HomepageSection {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  title     String?
+  subtitle  String?
+  enabled   Boolean  @default(true)
+  order     Int      @default(0)
+  config    Json?
+  updatedAt DateTime @updatedAt
+
+  @@map("homepage_sections")
+}
+
+// ─────────────────────────── REVIEWS ───────────────────────────
+
+model Review {
+  id           String   @id @default(cuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customerId   String?
+  customer     Customer? @relation(fields: [customerId], references: [id])
+  customerName String
+  rating       Int
+  title        String?
+  comment      String
+  photo        String?
+  productsUsed String[]
+  verified     Boolean  @default(false)
+  approved     Boolean  @default(false)
+  featured     Boolean  @default(false)
+  category     String?
+  createdAt    DateTime @default(now())
+
+  @@map("reviews")
+}
+
+// ─────────────────────────── OPS / SETTINGS ───────────────────────────
+
+model InventoryMovement {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  type      InventoryMovementType
+  quantity  Int
+  note      String?
+  adminId   String?
+  admin     Admin?   @relation(fields: [adminId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("inventory_movements")
+}
+
+model PriceHistory {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  oldPrice    Decimal  @db.Decimal(10, 2)
+  newPrice    Decimal  @db.Decimal(10, 2)
+  adminId     String?
+  admin       Admin?   @relation(fields: [adminId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@map("price_history")
+}
+
+model SiteSettings {
+  id    String @id @default("singleton")
+  key   String @unique
+  value Json
+
+  @@map("site_settings")
+}
+
+model AnalyticsEvent {
+  id         String             @id @default(cuid())
+  type       AnalyticsEventType
+  customerId String?
+  customer   Customer?          @relation(fields: [customerId], references: [id])
+  sessionId  String?
+  productId  String?
+  categoryId String?
+  value      Decimal?           @db.Decimal(10, 2)
+  metadata   Json?
+  createdAt  DateTime           @default(now())
+
+  @@index([type, createdAt])
+  @@map("analytics_events")
+}
